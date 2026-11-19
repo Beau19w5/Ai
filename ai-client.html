@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="AI">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>AI</title>
+<style>
+:root{--bg:#fbfbfa;--fg:#1c1d20;--mute:#8a8d94;--line:#e6e6e3;--card:#f1f1ee;--acc:#2b59c3;--accfg:#fff;--bad:#c0392b;--ok:#1f8a4c}
+@media(prefers-color-scheme:dark){:root{--bg:#121316;--fg:#ececee;--mute:#80838b;--line:#26282d;--card:#1b1d22;--acc:#6f93ee;--accfg:#0d1020;--bad:#ef6b5c;--ok:#4cc27f}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--fg);font:16px/1.55 -apple-system,"SF Pro Text","PingFang SC",system-ui,sans-serif;display:flex;flex-direction:column;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+header{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--line)}
+#pill{flex:1;min-width:0;text-align:left;background:var(--card);border-radius:20px;padding:7px 14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
+#pill small{font-weight:400;color:var(--mute);margin-left:6px}
+.ic{width:38px;height:38px;border-radius:19px;background:var(--card);font-size:18px}
+#list{flex:1;overflow-y:auto;padding:16px 16px 8px;-webkit-overflow-scrolling:touch}
+.empty{margin-top:30vh;text-align:center;color:var(--mute)}
+.u{margin:0 0 16px auto;max-width:82%;width:fit-content;background:var(--acc);color:var(--accfg);padding:9px 14px;border-radius:18px 18px 4px 18px;white-space:pre-wrap;word-break:break-word}
+.a{margin:0 0 16px;max-width:100%}
+.a .t{white-space:pre-wrap;word-break:break-word}
+.a .t.err{color:var(--bad)}
+.a pre{white-space:pre;overflow-x:auto;background:var(--card);padding:10px 12px;border-radius:10px;margin:8px 0;font-size:13.5px}
+.a code{font:13.5px ui-monospace,Menlo,monospace;background:var(--card);padding:1px 5px;border-radius:5px}.a pre code{padding:0;background:none}
+.more{color:var(--mute);font-size:13px;margin-top:4px}
+.th{margin-bottom:6px}
+.tk{color:var(--mute);font-size:14px;white-space:pre-wrap;word-break:break-word;border-left:2px solid var(--line);padding-left:10px;margin:4px 0 8px}
+.det{margin-top:6px;background:var(--card);border-radius:12px;padding:10px 12px;font-size:13.5px}
+.det div{display:flex;justify-content:space-between;gap:16px;padding:2px 0}.det span:first-child{color:var(--mute);flex:none}.det span:last-child{text-align:right;word-break:break-all}
+.ok{color:var(--ok)}.diff{color:var(--bad)}
+#bar{display:flex;gap:8px;align-items:flex-end;padding:8px 12px 10px;border-top:1px solid var(--line)}
+textarea{flex:1;resize:none;max-height:140px;border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:20px;padding:9px 14px;font:16px/1.4 inherit;outline:none}
+#send{width:38px;height:38px;border-radius:19px;background:var(--acc);color:var(--accfg);font-size:18px;flex:none}
+#send:disabled{opacity:.4}
+.sheet{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;align-items:flex-end;z-index:5}
+.sheet.on{display:flex}
+.panel{background:var(--bg);width:100%;max-height:82%;overflow-y:auto;border-radius:20px 20px 0 0;padding:16px 16px calc(20px + env(safe-area-inset-bottom))}
+.panel h3{margin:0 0 10px;font-size:17px}
+.grp{color:var(--mute);font-size:13px;margin:14px 0 4px}
+.opt{display:block;width:100%;text-align:left;padding:11px 12px;border-radius:12px}
+.opt.on{background:var(--card);font-weight:600}.opt.on::after{content:"✓";float:right;color:var(--acc)}
+.card{background:var(--card);border-radius:14px;padding:12px;margin-bottom:12px}
+.card label{display:block;font-size:13px;color:var(--mute);margin:8px 0 3px}
+.card input,.card select,.card textarea{width:100%;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--fg);padding:8px 10px;font:16px inherit;max-height:none}
+.card textarea{min-height:88px;font:14px ui-monospace,Menlo,monospace}
+.row{display:flex;gap:10px;margin-top:10px}
+.btn{padding:8px 14px;border-radius:12px;background:var(--bg);border:1px solid var(--line)}.btn.p{background:var(--acc);color:var(--accfg);border-color:var(--acc)}.btn.d{color:var(--bad)}
+#toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 60px);transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:8px 16px;border-radius:16px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:9;max-width:88%}
+#toast.on{opacity:1}
+</style>
+</head>
+<body>
+<header>
+  <button id="pill"></button>
+  <button class="ic" id="new" title="新对话">＋</button>
+  <button class="ic" id="set" title="设置">⚙︎</button>
+</header>
+<div id="list"></div>
+<div id="bar"><textarea id="ta" rows="1" placeholder="发消息"></textarea><button id="send">↑</button></div>
+
+<div class="sheet" id="sm"><div class="panel" id="pm"></div></div>
+<div class="sheet" id="ss"><div class="panel" id="ps"></div></div>
+<div id="toast"></div>
+
+<script>
+const $=s=>document.querySelector(s);
+const ls={get(k,d){try{const v=JSON.parse(localStorage.getItem(k));return v??d}catch{return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
+const BASE={openai:'https://api.openai.com/v1',anthropic:'https://api.anthropic.com',gemini:'https://generativelanguage.googleapis.com'};
+const TYPES={openai:'OpenAI 兼容（大多数服务商）',anthropic:'Anthropic Claude',gemini:'Google Gemini'};
+let channels=ls.get('ch',[]),sel=ls.get('sel',null),msgs=ls.get('msgs',[]),busy=false;
+const save=()=>{ls.set('ch',channels);ls.set('sel',sel);ls.set('msgs',msgs.slice(-60))};
+const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const uid=()=>Math.random().toString(36).slice(2,9);
+function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),2200)}
+function md(s){s=esc(s);s=s.replace(/```\w*\n?([\s\S]*?)```/g,(_,c)=>'<pre><code>'+c.replace(/\n$/,'')+'</code></pre>');s=s.replace(/`([^`\n]+)`/g,'<code>$1</code>');return s.replace(/\*\*([^*\n]+)\*\*/g,'<b>$1</b>')}
+const cur=()=>{const c=channels.find(c=>c.id===sel?.ch);return c&&sel.m?{c,m:sel.m}:null};
+
+/* ---- 协议适配 ---- */
+const root=(b,t)=>{b=b.trim().replace(/\/+$/,'');return t==='anthropic'?b.replace(/\/v1$/,''):b};
+const oaiBase=b=>{b=b.trim().replace(/\/+$/,'');return /\/v\d+(beta)?$/.test(b)?b:b+'/v1'};
+async function http(url,opt){
+  let r;try{r=await fetch(url,opt)}catch(e){throw new Error('网络请求失败：检查接口地址、网络，或该服务不允许浏览器直接访问（跨域）')}
+  const txt=await r.text();let j;try{j=JSON.parse(txt)}catch{}
+  if(!r.ok)throw new Error('HTTP '+r.status+'：'+((j&&(j.error?.message||j.error||j.message))||txt.slice(0,200)));
+  if(!j)throw new Error('返回内容不是 JSON：'+txt.slice(0,120));
+  return j}
+async function sse(url,opt,onEv){
+  let r;try{r=await fetch(url,opt)}catch(e){throw new Error('网络请求失败：检查接口地址、网络，或该服务不允许浏览器直接访问（跨域）')}
+  if(!r.ok){const t=await r.text();let j;try{j=JSON.parse(t)}catch{}const e=j&&(j.error?.message||j.error||j.message);throw new Error('HTTP '+r.status+'：'+(typeof e==='string'?e:t.slice(0,200)))}
+  const eat=l=>{l=l.replace(/\r$/,'');if(!l.startsWith('data:'))return;const d=l.slice(5).trim();if(!d||d==='[DONE]')return;let j;try{j=JSON.parse(d)}catch{return}onEv(j)};
+  if(!(r.headers.get('content-type')||'').includes('event-stream')){
+    const t=await r.text();if(/^\s*data:/.test(t)){t.split('\n').forEach(eat);return}
+    let j;try{j=JSON.parse(t)}catch{throw new Error('返回内容不是 JSON：'+t.slice(0,120))}onEv(j);return}
+  const rd=r.body.getReader(),dec=new TextDecoder();let buf='';
+  for(;;){const{done,value}=await rd.read();if(done)break;buf+=dec.decode(value,{stream:true});let i;while((i=buf.indexOf('\n'))>=0){eat(buf.slice(0,i));buf=buf.slice(i+1)}}
+  if(buf)eat(buf)}
+async function call(ch,model,hist,on){
+  const t0=performance.now(),t=ch.type,H={'content-type':'application/json'};let text='',think='',rm='',u={},url,body;
+  if(t==='anthropic'){url=root(ch.base,'anthropic')+'/v1/messages';Object.assign(H,{'x-api-key':ch.key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'});body={model,max_tokens:4096,stream:true,messages:hist.map(m=>({role:m.role,content:m.text}))}}
+  else if(t==='gemini'){url=root(ch.base)+'/v1beta/models/'+encodeURIComponent(model)+':streamGenerateContent?alt=sse';H['x-goog-api-key']=ch.key;body={contents:hist.map(m=>({role:m.role==='user'?'user':'model',parts:[{text:m.text}]}))}}
+  else{url=oaiBase(ch.base)+'/chat/completions';H.authorization='Bearer '+ch.key;body={model,stream:true,stream_options:{include_usage:true},messages:hist.map(m=>({role:m.role,content:m.text}))}}
+  await sse(url,{method:'POST',headers:H,body:JSON.stringify(body)},j=>{
+    if(j.error)throw new Error(typeof j.error==='string'?j.error:String(j.error.message||JSON.stringify(j.error)).slice(0,200));
+    if(t==='anthropic'){
+      if(j.type==='message_start'){rm=j.message.model;u.i=j.message.usage?.input_tokens}
+      else if(j.type==='content_block_delta'){const d=j.delta;if(d.type==='text_delta')text+=d.text;else if(d.type==='thinking_delta')think+=d.thinking}
+      else if(j.type==='message_delta'){u.o=j.usage?.output_tokens}
+      else if(j.type==='message'){rm=j.model;u={i:j.usage?.input_tokens,o:j.usage?.output_tokens};for(const b of j.content||[]){if(b.type==='text')text+=b.text;else if(b.type==='thinking')think+=b.thinking}}
+    }else if(t==='gemini'){
+      for(const p of j.candidates?.[0]?.content?.parts||[]){if(p.thought)think+=p.text||'';else text+=p.text||''}
+      rm=j.modelVersion||rm;if(j.usageMetadata)u={i:j.usageMetadata.promptTokenCount,o:j.usageMetadata.candidatesTokenCount}
+    }else{
+      const c=j.choices?.[0],d=c?.delta||c?.message||{};
+      text+=typeof d.content==='string'?d.content:(d.content||[]).map(p=>p.text||'').join('');
+      const rk=d.reasoning_content||d.reasoning;if(typeof rk==='string')think+=rk;
+      rm=j.model||rm;if(j.usage)u={i:j.usage.prompt_tokens,o:j.usage.completion_tokens}
+    }
+    on(text,think)});
+  if(!text)throw new Error('模型没有返回文字内容');
+  return{text,think,rm:rm||'（接口未返回）',u,ms:Math.round(performance.now()-t0)}}
+async function listModels(ch){
+  if(ch.type==='anthropic'){const j=await http(root(ch.base,'anthropic')+'/v1/models?limit=100',{headers:{'x-api-key':ch.key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'}});return j.data.map(x=>x.id)}
+  if(ch.type==='gemini'){const j=await http(root(ch.base)+'/v1beta/models?pageSize=200',{headers:{'x-goog-api-key':ch.key}});return j.models.filter(x=>(x.supportedGenerationMethods||[]).includes('generateContent')).map(x=>x.name.replace(/^models\//,''))}
+  const j=await http(oaiBase(ch.base)+'/models',{headers:{authorization:'Bearer '+ch.key}});return(j.data||j.models||[]).map(x=>x.id||x.name).sort()}
+
+/* ---- 对话界面 ---- */
+function same(a,b){a=a.toLowerCase();b=b.toLowerCase();return a===b||a.startsWith(b)||b.startsWith(a)}
+let raf=0;const soft=()=>{if(!raf)raf=requestAnimationFrame(()=>{raf=0;render()})};
+function render(force){
+  const p=$('#pill'),s=cur();
+  p.innerHTML=s?esc(s.m)+'<small>'+esc(s.c.name)+'</small>':'选择模型';
+  const L=$('#list'),y=L.scrollTop,near=L.scrollHeight-y-L.clientHeight<80;
+  if(!msgs.length){L.innerHTML='<div class="empty">'+(channels.length?'开始对话':'先点右上角 ⚙︎ 添加接口')+'</div>';return}
+  L.innerHTML=msgs.map((m,i)=>{
+    if(m.role==='user')return'<div class="u">'+esc(m.text)+'</div>';
+    const d=m.meta,wait=m.streaming&&!m.text,open=m.to??wait;
+    return'<div class="a">'+(m.think?'<div class="th"><button class="more" data-t="'+i+'">'+(wait?'思考中…':open?'收起思考':'思考过程')+'</button>'+(open?'<div class="tk">'+esc(m.think)+'</div>':'')+'</div>':'')+(m.text||!m.think?'<div class="t'+(m.err?' err':'')+'">'+(m.text?md(m.text):'…')+'</div>':'')+(d?'<button class="more" data-i="'+i+'">'+(m.open?'收起':'详细')+'</button>'+(m.open?'<div class="det"><div><span>请求的模型</span><span>'+esc(d.req)+'</span></div><div><span>接口返回的模型</span><span class="'+(same(d.req,d.rm)?'ok':'diff')+'">'+esc(d.rm)+(same(d.req,d.rm)?'':'（与请求不同）')+'</span></div><div><span>渠道</span><span>'+esc(d.ch)+'</span></div><div><span>协议</span><span>'+esc(TYPES[d.type].split('（')[0])+'</span></div><div><span>耗时</span><span>'+(d.ms/1000).toFixed(1)+' 秒</span></div><div><span>Token</span><span>'+(d.u.i??'-')+' 入 / '+(d.u.o??'-')+' 出</span></div></div>':''):'')+'</div>'}).join('');
+  L.scrollTop=(force||near)?L.scrollHeight:y}
+$('#list').onclick=e=>{const b=e.target.closest('.more');if(!b)return;
+  if(b.dataset.t!==undefined){const m=msgs[+b.dataset.t];m.to=!(m.to??(m.streaming&&!m.text))}
+  else{const m=msgs[+b.dataset.i];m.open=!m.open}
+  save();const y=$('#list').scrollTop;render();$('#list').scrollTop=y};
+async function send(){
+  const ta=$('#ta'),text=ta.value.trim();if(!text||busy)return;
+  const s=cur();if(!s){toast('先选择模型');openModels();return}
+  msgs.push({role:'user',text});ta.value='';ta.style.height='auto';busy=true;$('#send').disabled=true;
+  const hist=msgs.filter(m=>!m.err),m={role:'assistant',text:'',think:'',streaming:true};
+  msgs.push(m);render(true);
+  try{const r=await call(s.c,s.m,hist,(t,k)=>{m.text=t;m.think=k;soft()});
+    Object.assign(m,{text:r.text,think:r.think,streaming:false,meta:{req:s.m,rm:r.rm,ch:s.c.name,type:s.c.type,ms:r.ms,u:r.u}})}
+  catch(e){m.streaming=false;m.err=true;m.text=(m.text?m.text+'\n\n':'')+e.message}
+  busy=false;$('#send').disabled=false;save();render()}
+$('#send').onclick=send;
+$('#ta').oninput=e=>{const t=e.target;t.style.height='auto';t.style.height=Math.min(t.scrollHeight,140)+'px'};
+$('#new').onclick=()=>{if(msgs.length&&!confirm('开始新对话？当前记录会清空'))return;msgs=[];save();render()};
+
+/* ---- 模型选择 ---- */
+function openModels(){
+  const P=$('#pm');
+  P.innerHTML='<h3>选择模型</h3>'+(channels.some(c=>c.models.length)?channels.filter(c=>c.models.length).map(c=>'<div class="grp">'+esc(c.name)+'</div>'+c.models.map(m=>'<button class="opt'+(sel&&sel.ch===c.id&&sel.m===m?' on':'')+'" data-c="'+c.id+'" data-m="'+esc(m)+'">'+esc(m)+'</button>').join('')).join(''):'<div class="empty" style="margin:30px 0">还没有可选的模型，去设置里添加接口并获取模型列表</div>');
+  $('#sm').classList.add('on')}
+$('#pm').onclick=e=>{const b=e.target.closest('.opt');if(!b)return;sel={ch:b.dataset.c,m:b.dataset.m};save();$('#sm').classList.remove('on');render();toast('已切换：'+sel.m)};
+$('#sm').onclick=e=>{if(e.target.id==='sm')e.target.classList.remove('on')};
+$('#pill').onclick=openModels;
+
+/* ---- 设置 ---- */
+function openSet(){
+  const P=$('#ps');
+  P.innerHTML='<h3>接口设置</h3>'+channels.map(c=>'<div class="card" data-id="'+c.id+'"><label>名称</label><input data-k="name" value="'+esc(c.name)+'"><label>协议</label><select data-k="type">'+Object.entries(TYPES).map(([k,v])=>'<option value="'+k+'"'+(c.type===k?' selected':'')+'>'+v+'</option>').join('')+'</select><label>接口地址</label><input data-k="base" value="'+esc(c.base)+'" autocapitalize="off" autocorrect="off"><label>API Key</label><input data-k="key" type="password" value="'+esc(c.key)+'" autocapitalize="off" autocorrect="off"><label>模型（每行一个，可手动添加）</label><textarea data-k="models" autocapitalize="off" autocorrect="off">'+esc(c.models.join('\n'))+'</textarea><div class="row"><button class="btn p" data-a="fetch">获取模型列表</button><button class="btn d" data-a="del">删除</button></div></div>').join('')+'<div class="row"><button class="btn p" data-a="add">添加接口</button><button class="btn" data-a="close">完成</button></div>';
+  $('#ss').classList.add('on')}
+$('#ps').onchange=e=>{
+  const k=e.target.dataset.k,card=e.target.closest('.card');if(!k)return;
+  const c=channels.find(x=>x.id===card.dataset.id);
+  if(k==='models')c.models=e.target.value.split('\n').map(s=>s.trim()).filter(Boolean);
+  else if(k==='type'){const old=c.type;c.type=e.target.value;if(!c.base||c.base===BASE[old])c.base=BASE[c.type];save();openSet();return}
+  else c[k]=e.target.value.trim();
+  save();render()};
+$('#ps').onclick=async e=>{
+  const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a;
+  if(a==='close'){$('#ss').classList.remove('on');render();return}
+  if(a==='add'){channels.push({id:uid(),name:'新接口',type:'openai',base:BASE.openai,key:'',models:[]});save();openSet();return}
+  const c=channels.find(x=>x.id===b.closest('.card').dataset.id);
+  if(a==='del'){if(!confirm('删除「'+c.name+'」？'))return;channels=channels.filter(x=>x!==c);if(sel?.ch===c.id)sel=null;save();openSet();return}
+  if(a==='fetch'){
+    if(!c.key){toast('先填 API Key');return}
+    b.textContent='获取中…';
+    try{const ms=await listModels(c);c.models=ms;save();toast('获取到 '+ms.length+' 个模型')}catch(err){toast(err.message.slice(0,80))}
+    openSet()}};
+$('#set').onclick=openSet;
+$('#ss').onclick=e=>{if(e.target.id==='ss'){e.target.classList.remove('on');render()}};
+
+render();if(!channels.length)setTimeout(()=>{channels.push({id:uid(),name:'我的接口',type:'openai',base:BASE.openai,key:'',models:[]});save();openSet()},300);
+</script>
+</body>
+</html>
